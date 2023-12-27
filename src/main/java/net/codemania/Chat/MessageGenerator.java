@@ -1,81 +1,130 @@
 package net.codemania.Chat;
 
+import net.codemania.Service;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Color;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+
+import java.util.List;
+import java.util.Random;
 
 
 public class MessageGenerator {
 
+
+
     public static Component generateChatMessage(
             Player player,
             Component message,
-            String service,
-            String serviceDescription,
-            TextColor servicePrimaryColor,
-            TextColor serviceSecondaryColor
+            Service service
     ) {
-        String playerName = player.getName();
-        Scoreboard scoreboard = player.getScoreboard();
-        Team playerTeam = scoreboard.getEntryTeam(playerName);
 
-
-        Component teamTag;
-        TextColor teamColor;
-
-        if (playerTeam != null) {
-            teamColor = playerTeam.color();
-            teamTag = generateTag(playerTeam.getName(), teamColor, playerTeam.displayName().color(teamColor));
-
-        } else {
-            teamColor = TextColor.color(Color.BLUE.asRGB());
-            teamTag = generateTag("P", teamColor, Component.text("Player").color(teamColor));
-        }
 
 
         return Component.empty()
-                .append(generateServiceTag(service, serviceDescription, servicePrimaryColor, serviceSecondaryColor))
-                .append(teamTag)
                 .append(
-                        Component.text(playerName).color(TextColor.color(Color.ORANGE.asRGB()))
+                        generateName(
+                                player,
+                                service
+                        )
                 )
-                .append(
-                        Component.text(": ").color(TextColor.color(Color.SILVER.asRGB()))
-                )
+                .append(Component.text(": ", NamedTextColor.GRAY))
                 .append(message);
 
     }
 
-    private static Component generateTag(
-            Component badgeText,
+    public static Component generateName(Player player,
+                                          Service service) {
+        TextColor nameColor = NamedTextColor.GOLD;
+
+        String playerName = player.getName();
+        Team playerTeam = player.getScoreboard().getEntryTeam(playerName);
+        TextColor defaultColor = NamedTextColor.BLUE;
+
+
+        Component teamTag;
+        TextColor teamColor;
+        
+        if (playerTeam != null) {
+            try {
+                teamColor = playerTeam.color();
+            } catch (Exception e) {
+                teamColor = defaultColor;
+            }
+            teamTag = generateBadge(playerTeam.getName(), teamColor, playerTeam.displayName().color(teamColor));
+
+        } else {
+            teamColor = TextColor.color(defaultColor);
+            teamTag = generateBadge("P", teamColor, Component.text("Player").color(teamColor));
+        }
+
+
+        return Component.empty()
+                .append(
+                        generateServiceBadge(service))
+                .append(teamTag)
+                .append(player.displayName().color(nameColor))
+                ;
+    }
+
+
+    private static Component generateBadge(
+            String badgeText,
             TextColor badgeColor,
-            Component description
-    ) {
+            Component description) {
         return Component.empty()
                 .append(Component.text("["))
-                .append(badgeText)
+                .append(Component.text(badgeText))
                 .append(Component.text("] "))
                 .hoverEvent(HoverEvent.showText(description))
                 .color(badgeColor)
                 ;
-    } private static Component generateTag(
-            String badgeText,
-            TextColor badgeColor,
-            Component description) {
-        return generateTag(Component.text(badgeText), badgeColor, description);
+
     }
 
 
-    private static Component generateServiceTag(
-            String service,
-            String serviceDescription,
-            TextColor servicePrimaryColor,
-            TextColor serviceSecondaryColor) {
-        return generateTag(service, servicePrimaryColor, Component.text(serviceDescription).color(serviceSecondaryColor));
+    public static Component generateServiceBadge(Service service) {
+        return generateBadge(
+                service.getName(),
+                service.getPrimaryColor(),
+                Component.text(service.getDescription()).color(service.getSecondaryColor())
+        );
+    }
+
+
+    public static List<List<String>> joinMessages;
+    public static List<List<String>> leaveMessages;
+
+    private static final Random random = new Random();
+    public static Component generateJoinMessage(Player player) {
+
+        int randomIndex = random.nextInt(joinMessages.size());
+        List<String> randomMessage = joinMessages.get(randomIndex);
+
+
+        Component playerComponent = generateName(player, Service.Minecraft());
+
+
+        return  Component.text(randomMessage.get(0)).color(NamedTextColor.YELLOW)
+                .append(playerComponent)
+                .append(Component.text(" " + randomMessage.get(1), NamedTextColor.YELLOW));
+    }
+
+    public static Component generateLeaveMessage(Player player) {
+
+        int randomIndex = random.nextInt(leaveMessages.size());
+        List<String> randomMessage = leaveMessages.get(randomIndex);
+
+
+        Component playerComponent = generateName(player, Service.Minecraft());
+
+
+        return  Component.text(randomMessage.get(0)).color(NamedTextColor.YELLOW)
+                .append(playerComponent)
+                .append(Component.text(" " + randomMessage.get(1), NamedTextColor.YELLOW));
     }
 
 }

@@ -1,0 +1,6 @@
+
+discord:
+  bot_secret: 0 #your bot token
+  public_channel_id: 0 # the channel id of the public discord channel the bot should use
+  admin_channel_id: 0 # the channel id of the admin channel, for advanced debug messages
+  guild_id: 0 # the guild id of your guild
